@@ -1,0 +1,47 @@
+﻿@page
+@model FreightApp.Pages.Auth.LoginModel
+@{
+    ViewData["Title"] = "Вход в систему";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4>Вход</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="form-group mb-3">
+                            <label asp-for="Username" class="form-label">Логин</label>
+                            <input asp-for="Username" class="form-control" />
+                            <span asp-validation-for="Username" class="text-danger small"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Password" class="form-label">Пароль</label>
+                            <input asp-for="Password" type="password" class="form-control" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                        {
+                            <div class="alert alert-danger">@Model.ErrorMessage</div>
+                        }
+
+                        <button type="submit" class="btn btn-success">Войти</button>
+                    </form>
+                    <h4>Быстрый вход как тестовый пользователь</h4>
+
+                    <form method="post" asp-page-handler="QuickLogin">
+                        <button name="role" value="admin" class="btn btn-danger">Админ</button>
+                        <button name="role" value="client" class="btn btn-success">Клиент</button>
+                        <button name="role" value="dispatcher" class="btn btn-warning">Диспетчер</button>
+                        <button name="role" value="driver" class="btn btn-info">Водитель</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

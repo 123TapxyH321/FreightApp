@@ -1,0 +1,83 @@
+﻿@page
+@model DriverOrdersModel
+@{
+    ViewData["Title"] = "Заказы водителя";
+}
+
+<h2>Мои заказы</h2>
+
+@if (Model.MyOrders.Any())
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Описание</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.MyOrders)
+            {
+                <tr>
+                    <td>@order.StoreOut</td>
+                    <td>@order.StoreIn</td>
+                    <td>@order.Note</td>
+                    <td>
+                        @order.Status
+                        @if (order.Status == "В работе водителем")
+                        {
+                            <form method="post" class="mt-1">
+                                <input type="hidden" name="orderId" value="@order.OrderId" />
+                                <button type="submit" name="action" value="finish" class="btn btn-sm btn-outline-success">Завершить доставку</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-warning">Нет активных заказов.</div>
+}
+
+<hr />
+<h2>Предложенные заказы</h2>
+
+@if (Model.OfferedOrders.Any())
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Описание</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.OfferedOrders)
+            {
+                <tr>
+                    <td>@order.StoreOut</td>
+                    <td>@order.StoreIn</td>
+                    <td>@order.Note</td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                            <button type="submit" name="action" value="accept" class="btn btn-sm btn-success">Принять</button>
+                            <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Отклонить</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">Нет предложений.</div>
+}

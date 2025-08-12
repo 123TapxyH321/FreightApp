@@ -1,0 +1,46 @@
+﻿@page
+@model NewOrdersModel
+@{
+    ViewData["Title"] = "Новые заказы";
+}
+
+<h2>Новые заказы</h2>
+
+@if (Model.Orders.Any())
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Клиент</th>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Описание</th>
+                <th>Дата</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.ClientName</td>
+                    <td>@order.StoreOut</td>
+                    <td>@order.StoreIn</td>
+                    <td>@order.Note</td>
+                    <td>@order.DateOrder.ToString("dd.MM.yyyy")</td>
+                    <td>
+                        <form method="post">
+                            <input type="hidden" name="orderId" value="@order.OrderId" />
+                            <button type="submit" class="btn btn-sm btn-success">Принять в работу</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">Нет новых заказов</div>
+}
+<a asp-page="/Dispatcher/MyOrders" class="btn btn-secondary">Вернуться к заказам</a>

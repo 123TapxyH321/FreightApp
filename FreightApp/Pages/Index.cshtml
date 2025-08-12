@@ -1,0 +1,34 @@
+﻿@page
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+@{
+    ViewData["Title"] = "Главная";
+    var userName = HttpContextAccessor.HttpContext?.Session.GetString("FullName") ?? "Гость";
+    var userRole = HttpContextAccessor.HttpContext?.Session.GetString("UserRole") ?? "Guest";
+}
+
+<h2>Добро пожаловать, @userName!</h2>
+
+@if (userRole == "Клиент")
+{
+    <a class="btn btn-primary m-2" asp-page="/Client/MyOrders">Мои заказы</a>
+    <a class="btn btn-success m-2" asp-page="/Client/CreateOrder">Создать заказ</a>
+}
+else if (userRole == "Диспетчер")
+{
+    <a class="btn btn-info m-2" asp-page="/Dispatcher/NewOrders">Новые заказы</a>
+    <a class="btn btn-primary m-2" asp-page="/Dispatcher/MyOrders">Мои заказы</a>
+}
+else if (userRole == "Водитель")
+{
+    <a class="btn btn-primary m-2" asp-page="/Driver/Orders">Мои и предложенные заказы</a>
+}
+else if (userRole == "Администратор")
+{
+    <a class="btn btn-danger m-2" asp-page="/Admin/Users">Управление пользователями</a>
+}
+else
+{
+    <p>Вы не вошли в систему. Пожалуйста, выполните <a asp-page="/Auth/Login">вход</a> или <a asp-page="/Auth/Register">регистрацию</a>.</p>
+}

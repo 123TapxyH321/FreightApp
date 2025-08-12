@@ -1,0 +1,77 @@
+﻿@page
+@model MyDispatcherOrdersModel
+@{
+    ViewData["Title"] = "Мои заказы в работе";
+}
+
+<h2>Мои заказы</h2>
+<a asp-page="/Dispatcher/NewOrders" class="btn btn-primary mb-3">Новые заказы</a>
+@if (Model.Orders.Any())
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Клиент</th>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Описание</th>
+                <th>Дата</th>
+                <th>Водитель</th>
+                <th>Статус</th>
+                <th>Действие</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders)
+            {
+                var rowClass = order.Status switch
+                {
+                    "Отказ водителя" => "table-danger",
+                    "В работе водителем" => "table-warning",
+                    "Доставлено" => "table-success",
+                    _ => ""
+                };
+                <tr class="@rowClass">
+                    <td>@order.ClientName</td>
+                    <td>@order.StoreOut</td>
+                    <td>@order.StoreIn</td>
+                    <td>@order.Note</td>
+                    <td>@order.DateOrder.ToString("dd.MM.yyyy")</td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(order.DriverName))
+                        {
+                            @order.DriverName
+                        }
+                        else
+                        {
+                            <form method="post">
+                                <input type="hidden" name="orderId" value="@order.OrderId" />
+                                <select name="driverId" class="form-select form-select-sm d-inline w-auto">
+                                    @foreach (var driver in Model.Drivers)
+                                    {
+                                        <option value="@driver.Id">@driver.Name</option>
+                                    }
+                                </select>
+                                <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">Назначить</button>
+                            </form>
+                        }
+                    </td>
+                    <td>@order.Status</td>
+                    <td>
+                        @if (order.Status == "Доставлено")
+                        {
+                            <form method="post">
+                                <input type="hidden" name="orderId" value="@order.OrderId" />
+                                <button type="submit" name="action" value="complete" class="btn btn-sm btn-success">Завершить</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">Нет заказов в работе.</div>
+}

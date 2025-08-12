@@ -1,0 +1,39 @@
+﻿@page
+@model MyOrdersModel
+@{
+    ViewData["Title"] = "Мои заказы";
+}
+
+<h2>Мои заказы</h2>
+<a asp-page="/Client/CreateOrder" class="btn btn-primary mb-3">Создать заказ</a>
+
+@if (Model.Orders.Any())
+{
+    <table class="table table-bordered mt-3">
+        <thead class="table-light">
+            <tr>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Описание</th>
+                <th>Дата заказа</th>
+                <th>Статус</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Model.Orders)
+            {
+                <tr>
+                    <td>@order.StoreOut</td>
+                    <td>@order.StoreIn</td>
+                    <td>@order.Note</td>
+                    <td>@order.DateOrder.ToString("dd.MM.yyyy")</td>
+                    <td>@order.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info mt-3">Вы ещё не создавали заказов.</div>
+}

@@ -1,0 +1,30 @@
+﻿@page
+@model CreateOrderModel
+@{
+    ViewData["Title"] = "Создать заказ";
+}
+
+<h2>Создать заказ</h2>
+
+<form method="post" class="mt-4">
+    <div class="mb-3">
+        <label asp-for="Order.StoreOut" class="form-label">Откуда</label>
+        <input asp-for="Order.StoreOut" class="form-control" />
+        <span asp-validation-for="Order.StoreOut" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Order.StoreIn" class="form-label">Куда</label>
+        <input asp-for="Order.StoreIn" class="form-control" />
+        <span asp-validation-for="Order.StoreIn" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Order.Note" class="form-label">Описание</label>
+        <textarea asp-for="Order.Note" class="form-control"></textarea>
+        <span asp-validation-for="Order.Note" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-success">Создать</button>
+    <a asp-page="/Client/MyOrders" class="btn btn-secondary">Отмена</a>
+</form>

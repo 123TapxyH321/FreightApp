@@ -1,0 +1,50 @@
+﻿@page
+@model AdminUsersModel
+@{
+    ViewData["Title"] = "Управление пользователями";
+}
+
+<h2>Пользователи</h2>
+<a asp-page="/Admin/CreateUser" class="btn btn-primary mb-3">Создать пользователя</a>
+
+<table class="table table-bordered">
+    <thead class="table-light">
+        <tr>
+            <th>Логин</th>
+            <th>Имя</th>
+            <th>Роль</th>
+            <th>Подтверждён</th>
+            <th>Активен</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model.Users)
+        {
+            <tr>
+                <td>@user.Login</td>
+                <td>@user.UserName</td>
+                <td>@user.RoleName</td>
+                <td>@(user.UsStatus ? "✔" : "✖")</td>
+                <td>@(user.UsEnabled ? "✔" : "✖")</td>
+                <td>
+                    <form method="post">
+                        <input type="hidden" name="userId" value="@user.Id" />
+                        @if (!user.UsStatus)
+                        {
+                            <button name="action" value="approve" class="btn btn-sm btn-success">Подтвердить</button>
+                        }
+                        @if (user.UsEnabled)
+                        {
+                            <button name="action" value="block" class="btn btn-sm btn-danger">Заблокировать</button>
+                        }
+                        else
+                        {
+                            <button name="action" value="unblock" class="btn btn-sm btn-warning">Разблокировать</button>
+                        }
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

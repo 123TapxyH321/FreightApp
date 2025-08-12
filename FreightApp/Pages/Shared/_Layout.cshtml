@@ -1,0 +1,59 @@
+﻿@inject IHttpContextAccessor HttpContextAccessor
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - FreightApp</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark px-4">
+            <a class="navbar-brand" asp-page="/Index">FreightApp</a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" asp-page="/Index">Главная</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    @{
+                        var user = HttpContextAccessor.HttpContext?.Session.GetString("FullName");
+                        if (!string.IsNullOrEmpty(user))
+                        {
+                            <li class="nav-item">
+                                <span class="navbar-text text-light me-3">Привет, @user!</span>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Auth/Logout">Выход</a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Auth/Login">Вход</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-page="/Auth/Register">Регистрация</a>
+                            </li>
+                        }
+                    }
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container mt-4">
+        @RenderBody()
+    </div>
+
+    <footer class="border-top text-muted mt-4 py-3 text-center">
+        <div class="container">
+            FreightApp © @DateTime.Now.Year
+        </div>
+    </footer>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>
