@@ -72,8 +72,8 @@ public class DriverOrdersModel : PageModel
                       Status = status != null ? status.StatName : "Назначен водителю"
                   };
 
-        MyOrders = all.Where(x => x.Status == "В работе водителем" || x.Status == "Доставлено").ToList();
-        OfferedOrders = all.Where(x => x.Status == "Ожидает ответа" || x.Status == "Отклонён водителем").ToList();
+        MyOrders = all.Where(x => x.Status == "В пути" || x.Status == "Доставлен" || x.Status == "Принят водителем").ToList();
+        OfferedOrders = all.Where(x => x.Status == "Принят диспетчером" || x.Status == "Отклонён водителем").ToList();
     }
 
     public class OrderViewModel
