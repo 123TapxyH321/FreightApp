@@ -1,33 +1,49 @@
 ﻿@page
-@model MyOrdersModel
+@model ClientMyOrdersModel
 @{
     ViewData["Title"] = "Мои заказы";
 }
 
 <h2>Мои заказы</h2>
-<a asp-page="/Client/CreateOrder" class="btn btn-primary mb-3">Создать заказ</a>
 
-@if (Model.Orders.Any())
+@if (Model.MyOrders.Any())
 {
-    <table class="table table-bordered mt-3">
+    <table class="table table-sm table-hover align-middle">
         <thead class="table-light">
             <tr>
                 <th>Откуда</th>
                 <th>Куда</th>
                 <th>Описание</th>
-                <th>Дата заказа</th>
                 <th>Статус</th>
+                <th class="text-end">Действия</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var order in Model.Orders)
+            @foreach (var o in Model.MyOrders)
             {
-                <tr>
-                    <td>@order.StoreOut</td>
-                    <td>@order.StoreIn</td>
-                    <td>@order.Note</td>
-                    <td>@order.DateOrder.ToString("dd.MM.yyyy")</td>
-                    <td>@order.Status</td>
+                var rowClass = o.Status switch
+                {
+                    "Отклонён водителем" => "table-danger",
+                    "Принят диспетчером" => "table-warning",
+                    "Назначен водителю" => "table-warning",
+                    _ => ""
+                };
+                <tr class="@rowClass">
+                    <td>@o.StoreOut</td>
+                    <td>@o.StoreIn</td>
+                    <td>@o.Note</td>
+                    <td>@o.Status</td>
+                    <td class="text-end">
+                        @if (o.CanCancel)
+                        {
+                            <form method="post" asp-page-handler="Cancel" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@o.OrderId" />
+                                <input type="hidden" name="headId" value="@(o.HeadId?.ToString() ?? "")" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Снять заказ</button>
+                            </form>
+                        }
+                    </td>
                 </tr>
             }
         </tbody>
@@ -35,5 +51,5 @@
 }
 else
 {
-    <div class="alert alert-info mt-3">Вы ещё не создавали заказов.</div>
+    <div class="alert alert-secondary">У вас пока нет заказов.</div>
 }

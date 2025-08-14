@@ -4,33 +4,108 @@
     ViewData["Title"] = "Заказы водителя";
 }
 
-<h2>Мои заказы</h2>
-
-@if (Model.MyOrders.Any())
+<h2>Предложенные заказы</h2>
+@if (Model.OfferedOrders.Any())
 {
-    <table class="table table-bordered mt-3">
-        <thead class="table-light">
+    <table class="table table-sm table-striped align-middle">
+        <thead>
             <tr>
                 <th>Откуда</th>
                 <th>Куда</th>
                 <th>Описание</th>
+                <th>Дата</th>
                 <th>Статус</th>
+                <th class="text-end">Действия</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var order in Model.MyOrders)
+            @foreach (var o in Model.OfferedOrders)
             {
                 <tr>
-                    <td>@order.StoreOut</td>
-                    <td>@order.StoreIn</td>
-                    <td>@order.Note</td>
-                    <td>
-                        @order.Status
-                        @if (order.Status == "В работе водителем")
+                    <td>@o.StoreOut</td>
+                    <td>@o.StoreIn</td>
+                    <td>@o.Note</td>
+                    <td>@o.DateOrder.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@o.Status</td>
+                    <td class="text-end">
+                        <form method="post" asp-page-handler="AcceptOffer" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@o.OrderId" />
+                            <input type="hidden" name="headId" value="@o.HeadId" />
+                            <button type="submit" class="btn btn-sm btn-success">Принять</button>
+                        </form>
+                        <form method="post" asp-page-handler="RejectOffer" class="d-inline ms-1">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@o.OrderId" />
+                            <input type="hidden" name="headId" value="@o.HeadId" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Отклонить</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+     <div class="alert alert-secondary">Нет предложенных заказов.</div>
+}
+
+<hr />
+<h2>Мои заказы</h2>
+@if (Model.MyOrders.Any())
+{
+    <table class="table table-sm table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Откуда</th>
+                <th>Куда</th>
+                <th>Описание</th>
+                <th>Дата</th>
+                <th>Статус</th>
+                <th class="text-end">Действия</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in Model.MyOrders)
+            {
+                var rowClass = o.Status switch
+                {
+                    "Отклонён водителем" => "table-danger",
+                    "Принят водителем" => "table-warning",
+                    "В пути" => "table-warning",
+                    "Доставлен" => "table-success",
+                    _ => ""
+                };
+                <tr class="@rowClass">
+                    <td>@o.StoreOut</td>
+                    <td>@o.StoreIn</td>
+                    <td>@o.Note</td>
+                    <td>@o.DateOrder.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@o.Status</td>
+                    <td class="text-end">
+                        @if (o.Status == "Принят водителем")
                         {
-                            <form method="post" class="mt-1">
-                                <input type="hidden" name="orderId" value="@order.OrderId" />
-                                <button type="submit" name="action" value="finish" class="btn btn-sm btn-outline-success">Завершить доставку</button>
+                            <form method="post" asp-page-handler="RejectMy" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@o.OrderId" />
+                                <input type="hidden" name="headId" value="@o.HeadId" />
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Отказаться</button>
+                            </form>
+                            <form method="post" asp-page-handler="StartMy" class="d-inline ms-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@o.OrderId" />
+                                <input type="hidden" name="headId" value="@o.HeadId" />
+                                <button type="submit" class="btn btn-sm btn-primary">Приступить</button>
+                            </form>
+                        }
+                        @if (o.Status == "В пути")
+                        {
+                            <form method="post" asp-page-handler="CompleteMy" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="orderId" value="@o.OrderId" />
+                                <input type="hidden" name="headId" value="@o.HeadId" />
+                                <button type="submit" class="btn btn-sm btn-success">Завершить</button>
                             </form>
                         }
                     </td>
@@ -41,43 +116,5 @@
 }
 else
 {
-    <div class="alert alert-warning">Нет активных заказов.</div>
-}
-
-<hr />
-<h2>Предложенные заказы</h2>
-
-@if (Model.OfferedOrders.Any())
-{
-    <table class="table table-bordered mt-3">
-        <thead class="table-light">
-            <tr>
-                <th>Откуда</th>
-                <th>Куда</th>
-                <th>Описание</th>
-                <th>Действие</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var order in Model.OfferedOrders)
-            {
-                <tr>
-                    <td>@order.StoreOut</td>
-                    <td>@order.StoreIn</td>
-                    <td>@order.Note</td>
-                    <td>
-                        <form method="post">
-                            <input type="hidden" name="orderId" value="@order.OrderId" />
-                            <button type="submit" name="action" value="accept" class="btn btn-sm btn-success">Принять</button>
-                            <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">Отклонить</button>
-                        </form>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-info">Нет предложений.</div>
+     <div class="alert alert-secondary">Нет активных заказов.</div>
 }

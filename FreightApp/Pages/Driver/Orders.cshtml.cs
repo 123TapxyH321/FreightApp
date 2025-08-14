@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
+ï»¿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using FreightApp.DataAccess;
 using System.Security.Claims;
-using FreightApp.Domain.Models;
 using System.Linq;
 using System.Collections.Generic;
 using System;
+using Microsoft.EntityFrameworkCore;
 
 public class DriverOrdersModel : PageModel
 {
@@ -16,72 +16,147 @@ public class DriverOrdersModel : PageModel
         _db = db;
     }
 
-    public List<OrderViewModel> MyOrders { get; set; }
-    public List<OrderViewModel> OfferedOrders { get; set; }
+    public List<OrderViewModel> MyOrders { get; set; } = new();
+    public List<OrderViewModel> OfferedOrders { get; set; } = new();
 
     public void OnGet()
     {
         LoadOrders();
     }
 
-    public IActionResult OnPost(int orderId, string action)
+    [ValidateAntiForgeryToken]
+    public IActionResult OnPostAcceptOffer(int orderId, int headId)
     {
-        var driverId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-        var order = _db.OrderHead.FirstOrDefault(h => h.IdOrder == orderId && h.IdDraiver == driverId);
+        var driverId = GetCurrentUserId();
+        if (driverId == 0) return RedirectToPage("/Auth/Login");
 
-        if (order != null)
+        var head = _db.OrderHead.FirstOrDefault(h => h.Id == headId && h.IdOrder == orderId && h.IdDraiver == driverId);
+        if (head == null) return NotFound();
+
+        head.IdStatusOrder = StatusId("ÐŸÑ€Ð¸Ð½ÑÑ‚ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼");
+        head.DateStatusChange = DateTime.UtcNow;
+        _db.SaveChanges();
+        return RedirectToPage();
+    }
+
+    [ValidateAntiForgeryToken]
+    public IActionResult OnPostRejectOffer(int orderId, int headId)
+    {
+        var driverId = GetCurrentUserId();
+        if (driverId == 0) return RedirectToPage("/Auth/Login");
+
+        var head = _db.OrderHead.FirstOrDefault(h => h.Id == headId && h.IdOrder == orderId && h.IdDraiver == driverId);
+        if (head == null) return NotFound();
+
+        head.IdStatusOrder = StatusId("ÐžÑ‚ÐºÐ»Ð¾Ð½Ñ‘Ð½ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼");
+        head.DateStatusChange = DateTime.UtcNow;
+        _db.SaveChanges();
+        return RedirectToPage();
+    }
+
+    // ÐŸÑ€Ð¸Ð½ÑÑ‚ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼ â†’ ÐžÑ‚ÐºÐ»Ð¾Ð½Ñ‘Ð½ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼
+    [ValidateAntiForgeryToken]
+    public IActionResult OnPostRejectMy(int orderId, int headId)
+    {
+        var driverId = GetCurrentUserId();
+        if (driverId == 0) return RedirectToPage("/Auth/Login");
+
+        var head = _db.OrderHead.FirstOrDefault(h => h.Id == headId && h.IdOrder == orderId && h.IdDraiver == driverId);
+        if (head == null) return NotFound();
+
+        var curr = CurrName(head.IdStatusOrder);
+        if (curr == "ÐŸÑ€Ð¸Ð½ÑÑ‚ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼")
         {
-            if (action == "finish")
-            {
-                order.IdStatusOrder = _db.Status_Order.First(s => s.StatName == "Îòêëîí¸í âîäèòåëåì").Id;
-                order.DateStatusChange = DateTime.UtcNow;
-            }
-            else if (action == "accept")
-            {
-                order.IdStatusOrder = _db.Status_Order.First(s => s.StatName == "Ïðèíÿò âîäèòåëåì").Id;
-                order.DateStatusChange = DateTime.UtcNow;
-            }
-            else if (action == "reject")
-            {
-                order.IdStatusOrder = _db.Status_Order.First(s => s.StatName == "Äîñòàâëåí").Id;
-                order.DateStatusChange = DateTime.UtcNow;
-            }
-
-
+            head.IdStatusOrder = StatusId("ÐžÑ‚ÐºÐ»Ð¾Ð½Ñ‘Ð½ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼");
+            head.DateStatusChange = DateTime.UtcNow;
             _db.SaveChanges();
         }
+        return RedirectToPage();
+    }
 
+    // ÐŸÑ€Ð¸Ð½ÑÑ‚ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼ â†’ Ð’ Ð¿ÑƒÑ‚Ð¸
+    [ValidateAntiForgeryToken]
+    public IActionResult OnPostStartMy(int orderId, int headId)
+    {
+        var driverId = GetCurrentUserId();
+        if (driverId == 0) return RedirectToPage("/Auth/Login");
+
+        var head = _db.OrderHead.FirstOrDefault(h => h.Id == headId && h.IdOrder == orderId && h.IdDraiver == driverId);
+        if (head == null) return NotFound();
+
+        var curr = CurrName(head.IdStatusOrder);
+        if (curr == "ÐŸÑ€Ð¸Ð½ÑÑ‚ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼")
+        {
+            head.IdStatusOrder = StatusId("Ð’ Ð¿ÑƒÑ‚Ð¸");
+            head.DateStatusChange = DateTime.UtcNow;
+            _db.SaveChanges();
+        }
+        return RedirectToPage();
+    }
+
+    // Ð’ Ð¿ÑƒÑ‚Ð¸ â†’ Ð”Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½
+    [ValidateAntiForgeryToken]
+    public IActionResult OnPostCompleteMy(int orderId, int headId)
+    {
+        var driverId = GetCurrentUserId();
+        if (driverId == 0) return RedirectToPage("/Auth/Login");
+
+        var head = _db.OrderHead.FirstOrDefault(h => h.Id == headId && h.IdOrder == orderId && h.IdDraiver == driverId);
+        if (head == null) return NotFound();
+
+        var curr = CurrName(head.IdStatusOrder);
+        if (curr == "Ð’ Ð¿ÑƒÑ‚Ð¸")
+        {
+            head.IdStatusOrder = StatusId("Ð”Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½");
+            head.DateStatusChange = DateTime.UtcNow;
+            _db.SaveChanges();
+        }
         return RedirectToPage();
     }
 
     private void LoadOrders()
     {
-        var driverId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+        var driverId = GetCurrentUserId();
 
-        var all = from h in _db.OrderHead
-                  join o in _db.OrderList on h.IdOrder equals o.Id
-                  join s in _db.Status_Order on h.IdStatusOrder equals s.Id into sj
-                  from status in sj.DefaultIfEmpty()
+        var all = from h in _db.OrderHead.AsNoTracking()
+                  join o in _db.OrderList.AsNoTracking() on h.IdOrder equals o.Id
+                  join s in _db.Status_Order.AsNoTracking() on h.IdStatusOrder equals s.Id
                   where h.IdDraiver == driverId
+                  orderby o.DateOrder descending
                   select new OrderViewModel
                   {
+                      HeadId = h.Id,
                       OrderId = o.Id,
                       StoreOut = o.StoreOut,
                       StoreIn = o.StoreIn,
                       Note = o.Note,
-                      Status = status != null ? status.StatName : "Íàçíà÷åí âîäèòåëþ"
+                      Status = s.StatName,
+                      DateOrder = o.DateOrder
                   };
 
-        MyOrders = all.Where(x => x.Status == "Â ïóòè" || x.Status == "Äîñòàâëåí" || x.Status == "Ïðèíÿò âîäèòåëåì").ToList();
-        OfferedOrders = all.Where(x => x.Status == "Ïðèíÿò äèñïåò÷åðîì" || x.Status == "Îòêëîí¸í âîäèòåëåì").ToList();
+        OfferedOrders = all.Where(x => x.Status == "ÐÐ°Ð·Ð½Ð°Ñ‡ÐµÐ½ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÑŽ").ToList();
+        MyOrders = all.Where(x => x.Status == "ÐŸÑ€Ð¸Ð½ÑÑ‚ Ð²Ð¾Ð´Ð¸Ñ‚ÐµÐ»ÐµÐ¼" || x.Status == "Ð’ Ð¿ÑƒÑ‚Ð¸" || x.Status == "Ð”Ð¾ÑÑ‚Ð°Ð²Ð»ÐµÐ½").ToList();
     }
+
+    private int GetCurrentUserId()
+    {
+        return int.TryParse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var id) ? id : 0;
+    }
+
+    private int StatusId(string name) =>
+        _db.Status_Order.AsNoTracking().Where(s => s.StatName == name).Select(s => s.Id).FirstOrDefault();
+
+    private string CurrName(int statusId) =>
+        _db.Status_Order.AsNoTracking().Where(s => s.Id == statusId).Select(s => s.StatName).FirstOrDefault() ?? "";
 
     public class OrderViewModel
     {
+        public int HeadId { get; set; }
         public int OrderId { get; set; }
-        public string StoreOut { get; set; }
-        public string StoreIn { get; set; }
-        public string Note { get; set; }
-        public string Status { get; set; }
+        public string StoreOut { get; set; } = "";
+        public string StoreIn { get; set; } = "";
+        public string? Note { get; set; }
+        public string Status { get; set; } = "";
+        public DateTime DateOrder { get; set; }
     }
 }
