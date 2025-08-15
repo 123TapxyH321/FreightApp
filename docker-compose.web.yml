@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  web:
+    build:
+      context: .                  
+      dockerfile: Dockerfile      
+    container_name: freightapp-web
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: >
+        Host=${DB_HOST};Port=${DB_PORT};
+        Database=${DB_NAME};Username=${DB_USER};Password=${DB_PASS};
+        Ssl Mode=Disable;Include Error Detail=true
+    ports:
+      - "8080:8080"
